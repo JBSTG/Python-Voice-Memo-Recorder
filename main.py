@@ -4,12 +4,18 @@ import threading
 import os
 import sys
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import QMainWindow, QLabel, QGridLayout, QWidget
-from PyQt5.QtCore import QSize    
+from PyQt5.QtWidgets import QMainWindow, QLabel, QGridLayout, QWidget, QPushButton
+from PyQt5.QtCore import QSize, pyqtSlot
+
+#print(os.getcwd())
+
 
 class HelloWindow(QMainWindow):
     def __init__(self):
+        self.isRecording = False
+
         QMainWindow.__init__(self)
+
 
         self.setMinimumSize(QSize(640, 480))    
         self.setWindowTitle("Hello world - pythonprogramminglanguage.com") 
@@ -20,9 +26,18 @@ class HelloWindow(QMainWindow):
         gridLayout = QGridLayout(self)     
         centralWidget.setLayout(gridLayout)  
 
+        button = QPushButton('Record', self)
+        button.clicked.connect(self.on_click)
+
+
         title = QLabel("Hello World from PyQt", self) 
         title.setAlignment(QtCore.Qt.AlignCenter) 
         gridLayout.addWidget(title, 0, 0)
+
+    @pyqtSlot()
+    def on_click(self):
+        self.record_wrapper()
+        self.sender().setText(str(self.isRecording))
 
     def record(self):
         CHUNK = 1024
@@ -43,7 +58,7 @@ class HelloWindow(QMainWindow):
         frames = []
 
         #record until user stops recording
-        while self.recording:
+        while self.isRecording:
             data = stream.read(CHUNK)
             frames.append(data)
         #for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
@@ -87,13 +102,13 @@ class HelloWindow(QMainWindow):
         t.setDaemon(True)
         t.start()
     def handle_record(self):
-        if not self.recording:
+        if not self.isRecording:
             #self.set_recording_icon_active()
-            self.recording = True
+            self.isRecording = True
             self.record()
             #self.set_recording_icon_inactive()
-        elif self.recording:
-            self.recording = False
+        elif self.isRecording:
+            self.isRecording = False
             #self.set_recording_icon_inactive()
 
 
