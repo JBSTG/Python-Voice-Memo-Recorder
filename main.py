@@ -3,7 +3,7 @@ import wave
 import threading
 import os
 import sys
-from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5 import QtCore, QtWidgets, QtGui,QtMultimedia
 from PyQt5.QtWidgets import QLineEdit, QMainWindow, QLabel, QGridLayout, QWidget, QPushButton,QFileDialog
 from PyQt5.QtCore import QSize, pyqtSlot
 from PyQt5.QtGui import QFont
@@ -33,7 +33,7 @@ class HelloWindow(QMainWindow):
         #play button
         self.playButton = QPushButton('Play',self)
         self.playButton.setEnabled(False)
-        self.recordButton.clicked.connect(self.on_play)
+        self.playButton.clicked.connect(self.on_play)
         gridLayout.addWidget(self.playButton,2,0)
 
         #Save Button.
@@ -42,10 +42,22 @@ class HelloWindow(QMainWindow):
         self.saveButton.clicked.connect(self.on_save)
         gridLayout.addWidget(self.saveButton,1,0)
 
+        #media player
+        self.player = QtMultimedia.QMediaPlayer(self)
+        self.player.mediaStatusChanged.connect(self.on_media_status_changed)
 
         #Attributes for binding
         self.isRecording = False
         self.temporaryRecordingExists = False
+
+    def on_media_status_changed(self,status):
+        #print("X")
+        #print(status)
+        #print("X")
+        if(self.player.state() == QtMultimedia.QMediaPlayer.PlayingState):
+            self.playButton.setText("Stop")
+        elif(self.player.state() == QtMultimedia.QMediaPlayer.StoppedState):
+            self.playButton.setText("Play")
 
 
     def closeEvent(self,e):
@@ -89,6 +101,16 @@ class HelloWindow(QMainWindow):
         self.sender().setText(str(self.isRecording))
     @pyqtSlot()
     def on_play(self):
+        self.isPlayingAudio = True
+        #print(QtMultimedia.QAudioDeviceInfo.availableDevices(QtMultimedia.QAudio.AudioOutput))
+        filename = 'output.wav'
+        fullpath = QtCore.QDir.current().absoluteFilePath(filename) 
+        url = QtCore.QUrl.fromLocalFile(fullpath)
+        content = QtMultimedia.QMediaContent(url)
+        self.player.setMedia(content)
+        self.player.play()
+        self.isPlayingAudio = False
+        print("!!")
         pass
     @pyqtSlot()
     def on_save(self):
